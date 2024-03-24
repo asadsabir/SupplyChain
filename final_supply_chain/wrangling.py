@@ -27,18 +27,18 @@ y_test = mat['tra_Y_te']
 adj_mat = mat['tra_adj_mat']
 
 
-# null_count = np.zeros(48)
+null_count = np.zeros(48)
 
-# for time in X_train:
-#     for f in range(48):
-#         if sum(X_train[0][:,f]) == 0:
-#             null_count[f] += 1
+for time in X_train:
+    for f in range(48):
+        if sum(X_train[0][:,f]) == 0:
+            null_count[f] += 1
 
 
-# null_mask = [True if c == 0 else False for c in null_count]
+null_mask = [True if c == 0 else False for c in null_count]
 
-# X_train = X_train[:,:,null_mask]
-# X_test = X_test[:,:,null_mask]
+X_train = X_train[:,:,null_mask]
+X_test = X_test[:,:,null_mask]
 
 G = nx.Graph()
 

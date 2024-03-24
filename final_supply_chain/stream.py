@@ -5,7 +5,7 @@
 
 import streamlit as st
 from streamlit_agraph import agraph, Node, Edge, Config
-from wrangling import G,y_train,X_train,X_test      #,X_test,X_train,y_test,y_train
+from wrangling import G,y_train,X_train,X_test,y_test
 import pandas as pd
 import networkx as nx
 import torch
@@ -13,6 +13,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
+st.set_page_config(layout='wide')
 st.title('Time Series forecasting with GNNs and LSTM')
 
 gnn_intro,lstm_intro = st.columns(2)
@@ -38,7 +39,7 @@ st.subheader("Demystifying the black box")
 st.write(f"To understand how these models can work together, lets walk through an implementation I built using Pytorch on a [traffic forecasting dataset]({DATA_URL}).")
 st.write("The goal for this dataset is to forecast the spatio-temporal traffic volume based on the historical traffic volume and other features in neighboring locations. Specifically, the traffic volume is measured every 15 minutes at 36 sensor locations along two major highways in Northern Virginia/Washington D.C. capital region. Below you can visualize the dataset as a graph structure. The nodes represent traffic sensors while the edges represent the roads that connect them. You can move the nodes around and zoom in and out to get a better look. Click on a node to see its Traffic volume on the right")
 st.divider()
-model_dict = torch.load('final_supply_chain/first_model.pth')
+model_dict = torch.load('final_supply_chain/models/modelat472.pth')
 
 @st.cache_data
 def make_edges():
@@ -76,12 +77,12 @@ with sensors:
 
 with volume_time:
     st.write(f'Traffic Volume for sensor {st.session_state.box1} over time(15min intervals)')
-    st.line_chart(pd.DataFrame(y_train[st.session_state.box1,:],columns=[f'Traffic Volume for sensor {st.session_state.box1} over time']))
-    st.write('timesteps in 15min intervals')
+    st.line_chart(pd.DataFrame(y_train[st.session_state.box1,:],columns=[f'Traffic Volume for sensor {st.session_state.box1}']))
+   
 
     st.write(f'Traffic Volume for sensor {st.session_state.box0} over time(15min intervals)')
-    st.line_chart(pd.DataFrame(y_train[st.session_state.box0,:],columns=[f'Traffic Volume for sensor {st.session_state.box0} over time']))
-    st.write('timesteps in 15min intervals')
+    st.line_chart(pd.DataFrame(y_train[st.session_state.box0,:],columns=[f'Traffic Volume for sensor {st.session_state.box0}']))
+    
 
 
 
@@ -159,15 +160,14 @@ with st.expander('Forget Gate'):
     test_xf = (1 - torch.sigmoid(torch.tensordot(torch.tensor(X_test[:,xf_nodes,:],dtype=torch.float),Wxf,dims) + model_dict['recurrent.conv_x_f.bias'] + model_dict['recurrent.conv_h_f.bias'] + model_dict['recurrent.b_f'])) * 100
 
     if one_slice:
-        plot_train = train_xf[:,st.session_state.hidden_feature]
-        plot_test = test_xf[:,st.session_state.hidden_feature]
+        plot_train = train_xf[:,st.session_state.hidden_feature].detach().numpy()
+        plot_test = test_xf[:,st.session_state.hidden_feature].detach().numpy()
     else:
-        plot_train = train_xf[:,:,st.session_state.hidden_feature]
-        plot_test = test_xf[:,:,st.session_state.hidden_feature]
+        plot_train = train_xf[:,:,st.session_state.hidden_feature].detach().numpy()
+        plot_test = test_xf[:,:,st.session_state.hidden_feature].detach().numpy()
 
     with train_fcol:
         fig = plt.figure(figsize=(10, 4))
-        
         sns.histplot(plot_train)
         plt.xlim((0,100))
         plt.xlabel("Percentage of Cell state 'forgotten'(%)")
@@ -198,14 +198,15 @@ with st.expander('Input Gate'):
     test_xi = (1 - torch.sigmoid(torch.tensordot(torch.tensor(X_test[:,xf_nodes,:],dtype=torch.float),Wxi,dims) + model_dict['recurrent.conv_x_i.bias'] + model_dict['recurrent.conv_x_i.bias'] + model_dict['recurrent.b_i'])) * 100
 
     if one_slice:
-        plot_train = train_xi[:,st.session_state.hidden_feature]
-        plot_test = test_xi[:,st.session_state.hidden_feature]
+        plot_train = train_xi[:,st.session_state.hidden_feature].detach().numpy()
+        plot_test = test_xi[:,st.session_state.hidden_feature].detach().numpy()
     else:
-        plot_train = train_xi[:,:,st.session_state.hidden_feature]
-        plot_test = test_xi[:,:,st.session_state.hidden_feature]
+        plot_train = train_xi[:,:,st.session_state.hidden_feature].detach().numpy()
+        plot_test = test_xi[:,:,st.session_state.hidden_feature].detach().numpy()
     with train_icol:
         fig = plt.figure(figsize=(10, 4))
         sns.histplot(plot_train)
+        plt.xlim((0,100))
         plt.xlabel("Input 'remembered'(%)")
         plt.title("Training set")
         if not one_slice:
@@ -215,6 +216,7 @@ with st.expander('Input Gate'):
     with test_icol:
         fig = plt.figure(figsize=(10, 4))
         sns.histplot(plot_test)
+        plt.xlim((0,100))
         plt.xlabel("Input 'remembered'(%)")
         plt.title("Testing set")
         if not one_slice:
@@ -228,6 +230,22 @@ st.write("Try to identify which of the hidden features are used for short term m
 st.subheader('Output Gate')
 
 st.subheader('and finally, the Forecast!')
+forecast_tr,forecast_te = st.columns(2)
+with forecast_tr:
+    train_preds = np.load('train_preds.npy')
+    print(train_preds[:,st.session_state.input_node].shape)
+    cast = pd.DataFrame({
+        'actual':y_train[st.session_state.input_node,:],
+        'prediction':train_preds[:,st.session_state.input_node]
+    })
+    st.line_chart(cast,color=['#db1212','#12dbca'])
 
+with forecast_te:
+    test_preds = np.load('test_preds.npy')
+    print(test_preds[:,st.session_state.input_node].shape)
+    cast = pd.DataFrame({
+        'actual':y_test[st.session_state.input_node,:],
+        'prediction':test_preds[:,st.session_state.input_node]
+    })
+    st.line_chart(cast,color=['#db1212','#12dbca'])
 st.subheader('Sources')
-st.write()
