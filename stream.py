@@ -258,7 +258,8 @@ with forecast_tr:
         'prediction':train_preds[:,st.session_state.input_node]
     })
     st.line_chart(cast,color=['#db1212','#12dbca'],x='Time in 15 minute intervals')
-    st.write(f'Train Root Mean Squared Error for Sensor {st.session_state.input_node} is **{np.mean(np.square(np.subtract(cast['prediction'],cast['actual'])))**0.5:3f}**')
+    tr_rmse = np.mean(np.square(np.subtract(cast['prediction'],cast['actual'])))**0.5
+    st.write(f'Train Root Mean Squared Error for Sensor {st.session_state.input_node} is **{tr_rmse:3f}**')
 
 with forecast_te:
     st.markdown('<h4> Testing Set </h4>',unsafe_allow_html=True)
@@ -270,7 +271,8 @@ with forecast_te:
         'prediction':test_preds[:,st.session_state.input_node]
     })
     st.line_chart(cast,color=['#db1212','#12dbca'],x='Time in 15 minute intervals')
-    st.write(f'Test Root Mean Squared Error for Sensor {st.session_state.input_node} is **{np.mean(np.square(np.subtract(cast['prediction'],cast['actual'])))**0.5:3f}**')
+    te_rmse = np.mean(np.square(np.subtract(cast['prediction'],cast['actual'])))**0.5
+    st.write(f'Test Root Mean Squared Error for Sensor {st.session_state.input_node} is **{te_rmse:3f}**')
 st.write('The average Root Mean Squared Error on the training and testing set for all Sensors is **0.0352** and **0.0482** respectively')
 st.subheader('Sources')
 paper_urls = ['https://arxiv.org/abs/1612.07659','https://arxiv.org/pdf/1706.02216.pdf']
