@@ -148,7 +148,7 @@ with st.expander('Forget Gate',expanded=True):
         fig = plt.figure(figsize=(10, 4))
         sns.lineplot(plot_train)
         
-        plt.ylabel("Percentage of Cell state 'forgotten'(%)")
+        plt.ylabel("Cell state 'forgotten'(%)")
         plt.xlabel('Time in 15 minute intervals')
         plt.title("Training set")
         
@@ -159,7 +159,7 @@ with st.expander('Forget Gate',expanded=True):
 
         sns.lineplot(plot_test)
         
-        plt.ylabel("Percentage of Cell state 'forgotten'(%)")
+        plt.ylabel("Cell state 'forgotten'(%)")
         plt.xlabel('Time in 15 minute intervals')
         plt.title("Testing set")
         
@@ -215,7 +215,7 @@ with sageviztr:
     effects = pd.DataFrame(effects)
     
     fig = plt.figure(figsize=(10, 4))
-    sns.histplot(effects.drop(str(st.session_state.input_node),axis=1))
+    sns.histplot(effects.drop(str(st.session_state.input_node),axis=1),multiple='fill')
     plt.xlabel(f'Effect on prediction of Sensor {st.session_state.input_node}')
     plt.ylabel('Frequency')
     st.pyplot(fig)
