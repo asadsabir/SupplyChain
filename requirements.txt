@@ -1,1 +1,2 @@
 streamlit-agraph==0.0.45
+seaborn==0.13.2
