@@ -120,10 +120,10 @@ with lstm_explain:
     st.write("- Input X represents a sensor and its current features.")
     st.write("- The Hidden state(H) represents the LSTM cell output from the last timestep. This is the 'short term memory' part.")
     st.write("- The Cell state(C) represents the 'long term memory' part and accumulates a bit of information from all the previous timesteps.")
-    st.write("- The 'forget' and 'input' gates decide what parts and how much of **X** and **H** should be commited to longterm memory in **C** and how much of **C** should be 'forgotten'.")
+    st.write("- The 'forget' and 'input' gates decide what parts and how much of **X** and **H** should be commited to longterm memory in **C** and how much of **C** should be 'forgotten' (how much its values should be reduced).")
     st.write("- The 'output' gate combines **X**, **H** and **C** to produce a prediction which will become the new **H** for the next timestep!")
-    st.write("- Information from neighboring nodes up to 2 edges away is also convoluted into this diagram as well using their features")
-    st.write("- The parameters that determine how much of the neighboring nodes information to use is independent of the nodes themselves and solely depends on their distance to the prediction node. This helps scale the model to large graphs")
+    st.write("- Information from neighboring nodes up to 2 edges away is also convoluted into this diagram as well using their features.")
+    st.write("- The parameters that determine how much of the neighboring nodes information to use is independent of the nodes themselves and solely depends on their distance to the prediction node. This helps scale the model to large graphs.")
     st.write("- This model makes 32 hidden predictions with the Graph Convolutional LSTM layer.")
 
 
@@ -191,11 +191,11 @@ with st.expander('Input Gate',expanded=True):
 
 st.subheader('SAGE: SAmple and AGgregatE!')
 st.image('https://snap.stanford.edu/graphsage/sample_and_agg.png')
-st.write("- The 32 hidden predictions from the GCLSTM layer pass through ReLU and are then put through this layer to get one traffic volume prediction")
-st.write("- The SAGE convolutional layer samples neighbor features, transforms them and then aggregates them either by taking the max,sum or mean")
-st.write("- In this model I used a **K** of one and used **mean** as the aggregation method")
+st.write("- The 32 hidden predictions from the GCLSTM layer pass through ReLU and are then put through this layer to get one traffic volume prediction.")
+st.write("- The SAGE convolutional layer samples neighbor features, transforms them and then aggregates them either by taking the max,sum or mean.")
+st.write("- In this model I used a **K** of one and used **mean** as the aggregation method.")
 st.write("- the final prediction of each sensor is a linear transformation of the neighbor features added to a seperate linear transformation of the root node with a bias of **0.0806**")
-st.write("- **Note**: The plots below only show the effect of neighboring sensors **in this layer**. Neighboring nodes have a seperate and possibly different effect in the LSTM layer")
+st.write("- **Note**: The plots below only show the effect of neighboring sensors **in this layer**. Neighboring nodes have a seperate and possibly different effect in the LSTM layer.")
 
 neighbor_effects_te = None
 neighbor_effects_tr = None
@@ -222,6 +222,7 @@ with sageviztr:
 
     fig2 = plt.figure(figsize=(10, 4))
     sns.histplot(effects[str(st.session_state.input_node)])
+    plt.title('Training Set')
     plt.xlabel('Effect of sensors own features')
     plt.ylabel('Frequency')
     st.pyplot(fig2)
@@ -235,7 +236,7 @@ with sagevizte:
     
     fig = plt.figure(figsize=(10, 4))
     sns.histplot(effects.drop(str(st.session_state.input_node),axis=1),multiple='fill')
-    
+    plt.title('Testing Set')
     plt.xlabel(f'Effect on prediction of Sensor {st.session_state.input_node}')
     plt.ylabel('Frequency')
     st.pyplot(fig)
