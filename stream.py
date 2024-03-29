@@ -216,7 +216,7 @@ with sageviztr:
     
     fig = plt.figure(figsize=(10, 4))
     sns.histplot(effects.drop(str(st.session_state.input_node),axis=1),multiple='fill')
-    plt.xlabel(f'Effect on prediction of Sensor {st.session_state.input_node}')
+    plt.xlabel(f'Effect of neighbors on prediction of Sensor {st.session_state.input_node}')
     plt.title('Training Set')
     plt.ylabel('Frequency')
     st.pyplot(fig)
