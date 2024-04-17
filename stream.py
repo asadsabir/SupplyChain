@@ -9,7 +9,7 @@ import json
 from wrangling import G,y_train,y_test
 
 
-st.set_page_config(page_title='Time Series forecasting with GNNs and LSTM',layout='wide',page_icon=':chart_increasing:')
+st.set_page_config(page_title='Time Series forecasting with GNNs and LSTM',layout='wide')
 st.title('Time Series forecasting with GNNs and LSTM')
 
 gnn_intro,lstm_intro = st.columns(2)
